@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Public APIs · 本地预览</title>
+<title>Public APIs · 免费 API 清单</title>
 <style>
   :root{
     --bg:#0e1116; --panel:#161b22; --panel2:#1c2330; --line:#26303d;
@@ -53,12 +53,20 @@
   #more:hover{border-color:var(--accent);color:#fff}
   .empty{color:var(--dim);padding:30px 6px;text-align:center}
   .note{font-size:12px;color:var(--dim);margin:0 0 14px;line-height:1.7}
-  @media (max-width:900px){ aside{display:none} .layout{padding:14px 12px 40px} }
+  .mob{display:none}
+  @media (max-width:900px){
+    aside{display:none} .layout{padding:14px 12px 40px}
+    .mob{display:inline-block}
+    header{padding:12px 14px}
+    header .sub{white-space:normal}
+    .note{overflow-wrap:anywhere}
+    .note code{word-break:break-all}
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>Public APIs · 本地预览</h1>
+  <h1>Public APIs · 免费 API 清单</h1>
   <input id="q" placeholder="搜名称 / 描述 / 分类，例如 weather、天气、stock、image" autocomplete="off" spellcheck="false">
   <span class="sub">共 2281 条 · REST API 2251 · MCP 30 · 52 个分类</span>
 </header>
@@ -74,13 +82,14 @@
       数据源：<a href="https://github.com/public-apis/public-apis" target="_blank" rel="noreferrer">public-apis/public-apis</a>
       README 表格（MIT 协议），同步于 2026-11-03。全部数据已内联在页面里，断网也能搜；点名字会开外链。<br>
       镜像仓库：<a href="https://github.com/QAQMMMMMAAAAA/Public-apis" target="_blank" rel="noreferrer">QAQMMMMMAAAAA/Public-apis</a>
-      · 本地预览：<code>E:\public-apis\启动.bat</code>
+      · 本地预览：<code>启动.bat</code>
     </p>
     <div class="filters">
       <span class="chip on" data-k="">全部</span>
       <span class="chip" data-k="api">REST API</span>
       <span class="chip" data-k="mcp">MCP Server</span>
       <select id="auth"><option value="">全部认证方式</option></select>
+      <select id="catSel" class="mob"><option value="">全部分类</option></select>
       <span class="chip" data-f="https">仅 HTTPS</span>
       <span class="chip" data-f="cors">CORS 可用</span>
       <span class="chip" data-f="noauth">免认证</span>
@@ -106,7 +115,7 @@ function renderCats(){
   const s0 = document.createElement('span'); s0.textContent = '全部';
   const b0 = document.createElement('b'); b0.textContent = E.length;
   all.append(s0, b0);
-  all.onclick = () => { cur = ''; shown = PAGE; renderCats(); render(); };
+  all.onclick = () => { cur = ''; shown = PAGE; renderCats(); if (catSel) catSel.value = ''; render(); };
   catBox.replaceChildren(all);
   Object.keys(CATS).sort((a,b)=>a.localeCompare(b)).forEach(c=>{
     const d = document.createElement('div');
@@ -114,7 +123,7 @@ function renderCats(){
     const s = document.createElement('span'); s.textContent = c;
     const b = document.createElement('b'); b.textContent = CATS[c];
     d.append(s, b);
-    d.onclick = () => { cur = (cur === c ? '' : c); shown = PAGE; renderCats(); render(); };
+    d.onclick = () => { cur = (cur === c ? '' : c); shown = PAGE; renderCats(); if (catSel) catSel.value = cur; render(); };
     catBox.appendChild(d);
   });
 }
@@ -125,6 +134,14 @@ const authSel = document.getElementById('auth');
   const o = document.createElement('option'); o.value = a; o.textContent = a; authSel.appendChild(o);
 });
 authSel.onchange = () => { shown = PAGE; render(); };
+
+/* 手机上侧栏是隐藏的，补一个分类下拉 */
+const catSel = document.getElementById('catSel');
+Object.keys(CATS).sort((a, b) => a.localeCompare(b)).forEach(c => {
+  const o = document.createElement('option'); o.value = c; o.textContent = c + ' (' + CATS[c] + ')';
+  catSel.appendChild(o);
+});
+catSel.onchange = () => { cur = catSel.value; shown = PAGE; renderCats(); render(); };
 
 document.querySelectorAll('.chip[data-f]').forEach(el => {
   el.onclick = () => {
